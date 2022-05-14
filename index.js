@@ -1,33 +1,10 @@
 const carts = []
 $(() => {
-    // リストを追加
-    items.forEach( (item, index) => {
-        const listItemElement = $(`
-            <div class="list-item" id="list-${index}">
-                <label class="checkbox"></label>
-                <div class="item-title">
-                    <h2>${item.title}</h2>
-                    <p>${item.sub_title}</p>
-                </div>
-                <div class="item-tag"></div>
-            </div>
-        `)
-        let categoryTags = []
-        item.categories.forEach( category => {
-            switch (category) {
-                case "家電":
-                    categoryTags.push(`<label class="tag-electric">${category}</label>`)
-                    break;
-                case "テレビ":
-                    categoryTags.push(`<label class="tag-tv">${category}</label>`)
-                    break;
-            }
-        })
-        listItemElement.find('.item-tag').append(categoryTags.join(""))
-        $('.content .list').append(listItemElement)
-
+    // 商品詳細画面を追加
+    items.forEach((item, index) => {
+        const isShowCartWindow = $('.cart').css('display') === "block"
         const detailItemElement = $(`
-            <div class="content-detail" id="detail-${index}">
+            <div class="content-detail" id="detail-${index}" style="width: ${isShowCartWindow ? '46%' : '60%'}">
                 <img src="assets/images/${item.image}" />
                 <div class="item-title">
                     <h1>${item.title}</h1>
@@ -39,6 +16,7 @@ $(() => {
                     <div class="detail-box">
                     </div>
                 </div>
+                <div class="add-cart-button">カートに追加</div>
             </div>
         `)
         if (index > 0) { detailItemElement.hide() }
@@ -54,6 +32,74 @@ $(() => {
         detailItemElement.find('.detail-box').append(detailTags.join(""))
         $('.content').append(detailItemElement)
     })
+    // リストを追加
+    buildItemElement(items)
+
+    // カートを空にする
+    $('.cart > div > a').on('click', (event) => {
+        $('.cart > div > p')[0].innerText = `選択中（0）`
+        $('.cart > div > span')[0].innerText = `合計金額：¥0`
+        $('.cart-item').remove()
+        $('.checkbox > img').remove()
+        $('.add-cart-button').css({
+            color: '#536FCA',
+            backgroundColor: '#FFFFFF',
+            border: '1px solid #536FCA',
+        })
+        $('.add-cart-button').hover(
+            () => $('.add-cart-button').css({
+                color: '#FFFFFF',
+                backgroundColor: '#536FCA'
+            }),
+            () => $('.add-cart-button').css({
+                color: '#536FCA',
+                backgroundColor: '#FFFFFF'
+            })
+        )
+        $('.add-cart-button').html('カートに追加')
+        hideCartWindow()
+        carts.length = 0
+    })
+
+    // リストのフィルター機能
+    $('.filter-header label').on('click', (event) => {
+        const parentElement = $(event.currentTarget.parentElement)
+        parentElement.find('label').removeClass('active')
+        $(event.currentTarget).addClass('active')
+        const genre = parentElement.attr('class')
+        const filter = event.currentTarget.innerText
+        switch (genre) {
+            case 'sale-filter':
+                break;
+            case 'category-filter':
+                const filterItems = filter !== "すべて" ? items.filter((item, index) => {
+                    return item.categories.includes(filter)
+                }) : items
+                buildItemElement(filterItems)
+                break;
+        }
+    })
+})
+
+// リストを描写
+function buildItemElement(showItems) {
+    $('.list-item').remove()
+    showItems.forEach( (item, index) => {
+        const isAppendedCart = carts.find(itemIndex => items[itemIndex].title === item.title)
+        const cartIndex = items.findIndex(it => it.title === item.title)
+        const listItemElement = $(`
+            <div class="list-item" id="list-${cartIndex}">
+                <label class="checkbox">${isAppendedCart === undefined ? '' : '<img src="assets/images/check.svg" />'}</label>
+                <img src="assets/images/${item.image}" />
+                <div class="item-title">
+                    <h2>${item.title}</h2>
+                    <p>${item.sub_title}</p>
+                </div>
+                <div class="item-price">¥${item.price.toLocaleString()}</div>
+            </div>
+        `)
+        $('.content .list').append(listItemElement)
+    })
 
     $('.list-item').on('click', (event) => {
         $('.list-item').css('border', '')
@@ -63,34 +109,41 @@ $(() => {
         $(`#detail-${index}`).show()
     })
 
-    $('.checkbox').on('click', (event) => {
-        const index = new RegExp("^list-([0-9]+)$").exec(event.currentTarget.parentElement.id)[1]
-        if (!carts.includes(index)) {
-            carts.push(index)
+    $('.checkbox, .add-cart-button').on('click', (event) => {
+        const matches = new RegExp("^(list|detail)-([0-9]+)$").exec(event.currentTarget.parentElement.id)
+        const itemIndex = matches[2]
+        const addCartButton = $(`#detail-${itemIndex}`).find('.add-cart-button')
+        if (!carts.includes(itemIndex)) {
+            carts.push(itemIndex)
             const checkImage = $(`<img />`, {
                 src: "assets/images/check.svg"
             })
-            checkImage.appendTo(event.currentTarget)
+            addCartButton.css({
+                backgroundColor: '#A5A5A5',
+                border: '1px solid #A5A5A5',
+                color: '#FFFFFF'
+            })
+            addCartButton.off('mouseenter mouseleave')
+            addCartButton.html('追加済み')
+            checkImage.appendTo($(`#list-${itemIndex}`).find('.checkbox'))
             buildCartElement()
             showCartWindow()
         } else {
             removeItem(event)
+            buildCartElement()
         }
     })
+}
 
-    $('.cart > a').on('click', (event) => {
-        $('.cart > p')[0].innerText = `選択中（0）`
-        $('.cart-item').remove()
-        $('.checkbox > img').remove()
-        hideCartWindow()
-        carts.length = 0
-    })
-})
-
+// カートを描写
 function buildCartElement() {
     // 一度カートの中を空にする
     $('.cart-item').remove()
+    const totalPrice = items.reduce((sum, item, index) => {
+        return sum + (carts.includes(`${index}`) ? item.price : 0)
+    }, 0)
     $('.cart > div > p')[0].innerText = `選択中（${carts.length}）`
+    $('.cart > div > span')[0].innerText = `合計金額：¥${totalPrice.toLocaleString()}`
     carts.forEach((itemIndex, index) => {
         const addCartItem = items[itemIndex]
         const cartItemElement = $(`
@@ -103,37 +156,70 @@ function buildCartElement() {
         `)
         $('.cart').append(cartItemElement)
     })
+    $('.cart-item').on('click', (event) => {
+        const index = new RegExp("^cart-([0-9]+)$").exec(event.currentTarget.id)[1]
+        $('.list-item').css('border', '')
+        $(`#list-${carts[index]}`).css({
+            border: '2px solid #7B91D7',
+            boxSizing: 'border-box'
+        })
+        $(`.content-detail`).hide()
+        $(`#detail-${carts[index]}`).show()
+    })
     $('.delete-icon').on('click', (event) => {
         removeItem(event)
     })
 }
 
+// カートからアイテムを削除
 function removeItem(event) {
     let cartIndex
-    if (event.currentTarget.className === 'checkbox') {
+    if (event.currentTarget.className === 'checkbox' ) {
         const checkboxIndex = new RegExp("^list-([0-9]+)$").exec(event.currentTarget.parentElement.id)[1]
         cartIndex = carts.indexOf(checkboxIndex)
     } else if (event.currentTarget.className === 'delete-icon') {
         cartIndex = new RegExp("^cart-([0-9]+)$").exec(event.currentTarget.parentElement.id)[1]
+    } else if (event.currentTarget.className === 'add-cart-button') {
+        const itemIndex = new RegExp("^detail-([0-9]+)$").exec(event.currentTarget.parentElement.id)[1]
+        cartIndex = carts.indexOf(itemIndex)
     }
     $(`#cart-${cartIndex}`).remove()
     const listValue = carts.splice(cartIndex, 1)[0]
     $(`#list-${listValue}`).find('.checkbox > img').remove()
+    const addCartButton = $(`#detail-${listValue}`).find('.add-cart-button')
+    addCartButton.css({
+        backgroundColor: '#FFFFFF',
+        border: '1px solid #536FCA',
+        color: '#536FCA'
+    })
+    addCartButton.hover(
+        () => addCartButton.css({
+            color: '#FFFFFF',
+            backgroundColor: '#536FCA'
+        }),
+        () => addCartButton.css({
+            color: '#536FCA',
+            backgroundColor: '#FFFFFF'
+        })
+    )
+    addCartButton.html('カートに追加')
     if (carts.length === 0) {
         hideCartWindow()
     }
 }
 
+// カートウィンドウを表示
 function showCartWindow() {
     $('.content-detail').animate({width: '46%'}, 300)
-    $('.cart').show()
     $('.cart').animate({'width': '15%'}, 300)
+    $('.cart').show()
 }
 
+// カートウィンドウを隠す
 function hideCartWindow() {
     $('.content-detail').animate({width: '60%'}, 300)
-    $('.cart').hide()
     $('.cart').animate({'width': '0%'}, 300)
+    $('.cart').hide()
 }
 
 const items = [
@@ -422,7 +508,7 @@ const items = [
         "title": "PANTHER (パンサー) ロードバイク",
         "sub_title": "ZEUS-3.0",
         "price": 59800,
-        "categories": ["自転車"],
+        "categories": ["その他", "自転車"],
         "image": "bike.jpg",
         "details": {
             "色": "New Black×Blue",
@@ -442,7 +528,7 @@ const items = [
         "title": "折りたたみ自転車 カゴ付 20インチ",
         "sub_title": "P-008N",
         "price": 13470,
-        "categories": ["自転車"],
+        "categories": ["その他", "自転車"],
         "image": "bike2.jpg",
         "details": {
             "色": "ブラック",
