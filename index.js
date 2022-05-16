@@ -79,6 +79,13 @@ $(() => {
                 break;
         }
     })
+
+    // 購入手続きへ
+    $('.navigator-purchase').on('click', event => {
+        $('.navigator-purchase').html('')
+        $('.navigator-purchase').toggleClass('circleactive')
+        setTimeout(() => $('.purchase').toggleClass('circleactive'), 100)
+    })
 })
 
 // リストを描写

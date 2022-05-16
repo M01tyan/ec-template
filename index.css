@@ -309,3 +309,37 @@ main {
 .delete-icon {
     display: none;
 }
+
+.navigator-purchase {
+    width: 130px;
+    height: 130px;
+    color: #ffffff;
+    font-weight: bold;
+    line-height: 130px;
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background-color: #7B91D7;
+    border-radius: 50%;
+    text-align: center;
+    z-index: 10;
+}
+
+.purchase {
+    background-color: #FFFFFF;
+    position: fixed;
+    border-radius: 50%;
+    bottom: 10px;
+    right: 10px;
+    width: 130px;
+    height: 130px;
+    z-index: 10;
+    transform: scale(0);
+}
+
+.circleactive {
+    /* width: 100vw;
+    height: 100vh; */
+    transform: scale(50);
+    transition: all .8s;
+}
