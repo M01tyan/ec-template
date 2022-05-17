@@ -81,10 +81,61 @@ $(() => {
     })
 
     // 購入手続きへ
-    $('.navigator-purchase').on('click', event => {
+    $('.navigator-purchase').on('click', async event => {
         $('.navigator-purchase').html('')
         $('.navigator-purchase').toggleClass('circleactive')
-        setTimeout(() => $('.purchase').toggleClass('circleactive'), 100)
+        // 0.1秒待つ
+        await new Promise(resolve => setTimeout(resolve, 100))
+        $('.purchase').toggleClass('circleactive')
+        await new Promise(resolve => setTimeout(resolve, 800))
+        // アニメーション完了後の処理
+        $('.purchase').css({
+            width: '100vw',
+            height: '100vh',
+            borderRadius: '0',
+            bottom: '0',
+            right: '0',
+            transform: 'none',
+        })
+        $('.purchase').removeClass('circleactive')
+        console.log(carts)
+        const procedure = $(`
+            <div class="close-button"></div>
+            <div class="procedure">
+                <h1>購入手続き</h1>
+                <div>
+                    <span>購入商品</span>
+                    <div class="carts-items">
+                    ${carts.map((val) => {
+                        const item = items[val]
+                        return `
+                            <div class="purchase-item">
+                                <img src="assets/images/${item.image}" />
+                                <h2>${item.title}</h2>
+                                <span>¥${item.price.toLocaleString()}</span>
+                            </div>
+                        `
+                    }).join('')}
+                    </div>
+                </div>
+                <div>
+                    <span>お届け先</span>
+                    <div class="address">
+                        <div class="postal">
+                            <input type="number" placeholder="0000000" />
+                            <button>検索</button>
+                        </div>
+                        <input type="text" placeholder="東京都港区1-1-1" />
+                    </div>
+                </div>
+            </div>
+        `)
+        $('.purchase').append(procedure).children().css({
+            opacity: 0
+        })
+        $('.purchase').children().animate({
+            opacity: 1
+        }, 1000)
     })
 })
 

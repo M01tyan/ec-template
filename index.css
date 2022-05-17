@@ -338,8 +338,74 @@ main {
 }
 
 .circleactive {
-    /* width: 100vw;
-    height: 100vh; */
     transform: scale(50);
     transition: all .8s;
+}
+
+.close-button::before {
+    position: absolute;
+    content: '';
+    width: 45px;
+    height: 3px;
+    background-color: #000000;
+    top: 32px;
+    left: 16px;
+    transform: rotate(45deg);
+}
+
+.close-button::after {
+    position: absolute;
+    content: '';
+    width: 45px;
+    height: 3px;
+    background-color: #000000;
+    top: 32px;
+    left: 16px;
+    transform: rotate(-45deg);
+}
+
+.procedure {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: overlay;
+}
+
+.procedure span {
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.carts-items {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-end;
+    padding: 30px 0;
+}
+
+.purchase-item {
+    text-align: center;
+    border: 1px solid #000;
+    margin: 0 20px;
+    padding: 20px;
+    border-radius: 2%;
+    height: auto;
+}
+
+.purchase-item > img {
+    width: 300px;
+    height: 300px;
+    object-fit: contain
+}
+
+.address {
+    display: flex;
+    flex-direction: column;
+}
+
+.address input {
+    padding: 10px;
+    width: 25vw;
+    font-size: 20px;
 }
