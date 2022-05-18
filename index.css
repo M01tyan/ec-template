@@ -381,31 +381,35 @@ main {
     flex-direction: row;
     justify-content: center;
     align-items: flex-end;
-    padding: 30px 0;
+    padding: 30px 0 150px 0;
 }
 
 .purchase-item {
     text-align: center;
     border: 1px solid #000;
     margin: 0 20px;
-    padding: 20px;
+    padding: 10px;
     border-radius: 2%;
     height: auto;
 }
 
 .purchase-item > img {
-    width: 300px;
-    height: 300px;
+    width: 200px;
+    height: 200px;
     object-fit: contain
 }
 
-.address {
-    display: flex;
-    flex-direction: column;
+.track {
+    width: 150px;
+    transform: translateX(-100vw);
 }
 
-.address input {
-    padding: 10px;
-    width: 25vw;
-    font-size: 20px;
+.move-center-track {
+    transform: translateX(0vw);
+    transition: all 3.5s ease-out;
+}
+
+.move-right-track {
+    transform: translateX(100vw);
+    transition: all 3.5s ease-in;
 }

@@ -98,7 +98,6 @@ $(() => {
             transform: 'none',
         })
         $('.purchase').removeClass('circleactive')
-        console.log(carts)
         const procedure = $(`
             <div class="close-button"></div>
             <div class="procedure">
@@ -118,16 +117,7 @@ $(() => {
                     }).join('')}
                     </div>
                 </div>
-                <div>
-                    <span>お届け先</span>
-                    <div class="address">
-                        <div class="postal">
-                            <input type="number" placeholder="0000000" />
-                            <button>検索</button>
-                        </div>
-                        <input type="text" placeholder="東京都港区1-1-1" />
-                    </div>
-                </div>
+                <img src="assets/images/track.gif" class="track"/>
             </div>
         `)
         $('.purchase').append(procedure).children().css({
@@ -136,6 +126,19 @@ $(() => {
         $('.purchase').children().animate({
             opacity: 1
         }, 1000)
+        procedure.find('img.track').toggleClass('move-center-track')
+        await new Promise(resolve => setTimeout(resolve, 3500))
+        procedure.find('.purchase-item').each((index, item) => {
+            const track = procedure.find('.track').eq(0)
+            track.css({
+                position: 'absolute',
+                top: `${track.position().top}px`,
+                left: `${track.position().left}px`
+            })
+            calcOrbit($(item).position(), track.position(), 0, $(item))
+        })
+        // 
+        // procedure.find('img.track').toggleClass('move-right-track')
     })
 })
 
@@ -278,6 +281,80 @@ function hideCartWindow() {
     $('.content-detail').animate({width: '60%'}, 300)
     $('.cart').animate({'width': '0%'}, 300)
     $('.cart').hide()
+}
+
+function calcOrbit(start, goal, v, item) {
+    let G = 10, //重力[px/s^2]
+        H = start.top - goal.top + 130, //高度[px]
+        S = goal.left - start.left; //距離[px]
+    //解の存在の有無判定に使う値
+    let b = -1 * (2 * v * v * S) / (G * S * S),
+        c = 1 + (2 * v * v * H) / (G * S * S);
+
+    let D = b * b - 4 * c; //0以上なら解が存在
+    if(D >= 0) {
+        //解が存在する場合はアニメーションを実行
+
+        //放物線の最初の角度を算出
+        let tanTheta0 = Math.atan((-b - Math.sqrt(D)) / 2),
+            tanTheta1 = Math.atan((-b + Math.sqrt(D)) / 2),
+            theta = Math.max(tanTheta0, tanTheta1);
+
+        //アニメーションを実行
+        startAnimation(G, v, theta, start, goal, item);
+    } else {
+        //解が存在しない場合は、初速を追加して放物線の軌道を再計算
+        v++;
+        calcOrbit(start, goal, v, item);
+    }
+}
+
+/**
+ * アニメーションを実行
+ */
+function startAnimation(G, v, theta, start, goal, item) {
+    //アニメーション実装
+    // $("body").append(item);
+    // const goods = $('.purchase-item').last()
+    item.css({
+        "position": "absolute",
+        "left": start.left + "px",
+        "top": start.top + "px"
+    })
+    var startTime = performance.now();
+    let scale = 1.0
+    requestAnimationFrame(loop);
+    function loop(nowTime) {
+        const t = (nowTime - startTime) / 75, //時間を取得
+              x = v * Math.cos(theta) * t, //横方向の位置を算出
+              y = Math.tan(theta) * x - (G / (2 * v * v * Math.cos(theta) * Math.cos(theta))) * x * x; //縦方向の位置を算出
+        //算出した値を基にボールの位置を移動
+        item.css({
+            "left": Math.round(start.left + x) + "px",
+            "top": Math.round(start.top - y) + "px",
+            "transform": `scale(${scale})`
+        })
+        scale -= 0.02
+        if (scale < 0) {
+            scale = 0.1
+        }
+        
+        //ボールがカートボタンに到着するまでアニメーションを実行
+        if(start.top - y < goal.top) {
+            requestAnimationFrame(loop);
+        } else {
+            //アニメーションの終了処理
+            // $ball.remove();
+            // $target.children()
+            //     .addClass("is-active");
+            // $cartNum.text(Number($cartNum.text()) + 1);
+            // $self.text("カートに入れました");
+            // var timer = setTimeout(function() {
+            //     clearInterval(timer);
+            //     $target.children().removeClass("is-active");
+            // }, 1000);
+        }
+    }
 }
 
 const items = [
