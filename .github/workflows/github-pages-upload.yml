@@ -7,21 +7,12 @@ permissions:
   pull-requests: write
 jobs:
   Create-Github-Pages-PR:
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
+    runs-on: ubuntu-20.04
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
-      - run: gh repo list
-        env:
-          GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-      - name: Create PR
-        run: |
-          gh pr create \
-            --head gh-pages \
-            --base main \
-            --title "Github Pagesへの自動PR作成" \
-            --body ""
-        env:
-          GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Deploy website
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
