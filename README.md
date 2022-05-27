@@ -1,2 +1,0 @@
-# ec-template
-# ec-template
