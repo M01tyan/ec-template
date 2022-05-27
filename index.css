@@ -336,9 +336,22 @@ main {
     z-index: 10;
     transform: scale(0);
 }
+.purchase-full-screen {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    bottom: 0;
+    right: 0;
+    transform: none;
+}
 
 .circleactive {
     transform: scale(50);
+    transition: all .8s;
+}
+
+.circlepassive {
+    transform: scale(1);
     transition: all .8s;
 }
 

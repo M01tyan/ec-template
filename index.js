@@ -89,21 +89,16 @@ $(() => {
         $('.purchase').toggleClass('circleactive')
         await new Promise(resolve => setTimeout(resolve, 800))
         // アニメーション完了後の処理
-        $('.purchase').css({
-            width: '100vw',
-            height: '100vh',
-            borderRadius: '0',
-            bottom: '0',
-            right: '0',
-            transform: 'none',
-        })
+        $('.purchase').toggleClass('purchase-full-screen')
         $('.purchase').removeClass('circleactive')
+        const totalPrice = items.reduce((sum, item, index) => {
+            return sum + (carts.includes(`${index}`) ? item.price : 0)
+        }, 0)
         const procedure = $(`
-            <div class="close-button"></div>
+            <div class="close-button" onclick="back()"></div>
             <div class="procedure">
-                <h1>購入手続き</h1>
+                <h1>合計金額　¥${totalPrice.toLocaleString()}</h1>
                 <div>
-                    <span>購入商品</span>
                     <div class="carts-items">
                     ${carts.map((val) => {
                         const item = items[val]
@@ -117,6 +112,7 @@ $(() => {
                     }).join('')}
                     </div>
                 </div>
+                <button onclick="trackAnimation(this)">購入する</button>
                 <img src="assets/images/track.gif" class="track"/>
             </div>
         `)
@@ -126,21 +122,44 @@ $(() => {
         $('.purchase').children().animate({
             opacity: 1
         }, 1000)
-        procedure.find('img.track').toggleClass('move-center-track')
-        await new Promise(resolve => setTimeout(resolve, 3500))
-        procedure.find('.purchase-item').each((index, item) => {
-            const track = procedure.find('.track').eq(0)
-            track.css({
-                position: 'absolute',
-                top: `${track.position().top}px`,
-                left: `${track.position().left}px`
-            })
-            calcOrbit($(item).position(), track.position(), 0, $(item))
-        })
-        // 
-        // procedure.find('img.track').toggleClass('move-right-track')
     })
 })
+
+async function trackAnimation(button) {
+    $(button).remove()
+    $('img.track').toggleClass('move-center-track')
+    await new Promise(resolve => setTimeout(resolve, 3500))
+    const track = $('.track').eq(0)
+    $('.purchase-item').each((index, item) => {
+        track.css({
+            position: 'absolute',
+            top: `${track.position().top}px`,
+            left: `${track.position().left}px`
+        })
+        $(item).position({
+            my: "center",
+            at: "center",
+            of: window,
+            using: (pos, ext) => {
+                $(item).animate({
+                    top: `${pos.top / 10}px`,
+                    left: `${pos.left}px`
+                }, 1000)
+            }
+        })
+    })
+    await new Promise(resolve => setTimeout(resolve, 1100))
+    calcOrbit($('.purchase-item').position(), track.position(), 0, $('.purchase-item'))
+}
+
+async function back() {
+    $('.navigator-purchase').html('')
+    $('.purchase').html('')
+    $('.purchase').removeClass('purchase-full-screen')
+    $('.purchase').toggleClass('circlepassive')
+    await new Promise(resolve => setTimeout(resolve, 100))
+    $('.navigator-purchase').toggleClass('circlepassive')
+}
 
 // リストを描写
 function buildItemElement(showItems) {
