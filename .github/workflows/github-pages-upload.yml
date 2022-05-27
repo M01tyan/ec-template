@@ -2,17 +2,16 @@ name: GitHub Pages Upload
 on: 
   push:
     branches: [main]
-permissions:
-  contents: read
-  pull-requests: write
 jobs:
   Create-Github-Pages-PR:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
-      - name: Deploy website
+      - name: Deploy to GithubPages
         uses: peaceiris/actions-gh-pages@v3
+        if: github.ref == 'refs/heads/main'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./
+          publish_branch: gh-pages
